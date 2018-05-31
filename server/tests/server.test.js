@@ -10,7 +10,9 @@ const todos = [{
     text: 'first test todo'
 }, {
     _id: new ObjectID(),
-    text: 'second test todo'
+    text: 'second test todo',
+    completed: true,
+    completedAt: 333
 }];
 
 beforeEach((done) => {
@@ -143,5 +145,53 @@ describe('DELETE /todos/:id', () => {
             .delete(`/todos/${hexId}`)
             .expect(404)
             .end(done);
+    });
+});
+
+describe('PATCH/todos/:id', () => {
+    it('should update the todo', (done) => {
+        //grab id of first item
+        let hexId = todos[0]._id.toHexString();
+        let body = {
+            text: 'server-test patch request',
+            completed: true
+        };
+        request(app)
+            .patch(`/todos/${hexId}`)
+            .send(body)
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.todo.text).toBe(body.text);
+                expect(res.body.todo.completed).toBe(true);
+                expect(typeof res.body.todo.completedAt).toBe('number');
+            })
+            .end(done);
+        //update the text to whatver and set completed to true
+        //200 
+        //verify that res body has text and completed is true and completed is a number
+    });
+
+    it('should clear completed at when todo is not completed', (done) => {
+        //grab id of 2nd todo item 
+        let hexId = todos[1]._id.toHexString();
+        let body = {
+            text: '2nd todo PATCH',
+            completed: false
+        };
+        //update the text 
+        request(app)
+            .patch(`/todos/${hexId}`)
+            .send(body)
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.todo.text).toBe(body.text);
+                expect(res.body.todo.completed).toBe(false);
+                expect(res.body.todo.completedAt).toBe(null);
+            })
+            .end(done);
+        //set completed to false
+
+        //expect 200 text is changed
+        //completed is false and completed at is null. toBeFalsy
     });
 });
