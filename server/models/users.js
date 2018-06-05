@@ -35,26 +35,47 @@ let UserSchema = new mongoose.Schema({
     }]
 });
 
-UserSchema.methods.toJSON = function () {
+UserSchema.methods.toJSON = function () { //this function is called when res.send is used by express 
     let user = this;
+    // console.log('user', user);
     let userObject = user.toObject();
-
+    // console.log('userobject', userObject);
     return _.pick(userObject, ['_id', 'email']);
 }
 
 UserSchema.methods.generateAuthToken = function () {
     var user = this;
     var access = 'auth';
-    var token = jwt.sign({_id: user._id.toHexString(), access}, 'abc123').toString();
+    var token = jwt.sign({ _id: user._id.toHexString(), access }, 'abc123').toString();
 
     // user.tokens.push({access,token});
-    user.tokens = user.tokens.concat([{access,token}]);
+    user.tokens = user.tokens.concat([{ access, token }]);
+    console.log(user);
     return user.save().then(() => {
         return token;
     });
-    
 };
 
+UserSchema.statics.findByToken = function (token) {
+    let User = this;
+    var decoded;
+
+    try {
+        decoded = jwt.verify(token, 'abc123');
+        console.log('decoded', decoded);
+    } catch (e) {
+        return Promise.reject();
+    };
+
+    return User.findOne({
+        '_id': decoded._id,
+        'tokens.token': token,
+        'tokens.access': 'auth'
+
+
+    });
+};
+//instance method vs model methods
 var User = mongoose.model('User', UserSchema);
 
 module.exports = { User };
