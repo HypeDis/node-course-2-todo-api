@@ -8,7 +8,7 @@ const _ = require('lodash');
 const { ObjectID } = require('mongodb');
 const { mongoose } = require('./db/mongoose.js');
 const { Todo } = require('./models/todo.js');
-const { Users } = require('./models/users.js');
+const { User } = require('./models/users.js');
 
 let app = express();
 const port = process.env.PORT || 3000;
@@ -82,13 +82,11 @@ app.delete('/todos/:id', (req, res) => {
         res.status(400).send();
     });
 });
-app.listen(port, () => {
-    console.log('Started on port port', port);
-});
+
 
 app.patch('/todos/:id', (req, res) => {
     var id = req.params.id;
-    var body = _.pick(req.body, ['text', 'completed']);
+    var body = _.pick(req.body, ['text', 'completed'])
 
     // console.log("body", body);
 
@@ -112,6 +110,28 @@ app.patch('/todos/:id', (req, res) => {
     }).catch((e) => {
         res.status(400).send();
     });
+});
+
+//post /users email and password
+//use pick to only accept email and password
+app.post('/users', (req, res) => {
+    let body = _.pick(req.body, ['email', 'password']);
+    // console.log('body is', body);
+    let user = new User(body)
+
+    user.save().then(() => {
+        return user.generateAuthToken();
+        // res.status(200).send({ user });
+    }).then((token) => {
+        res.header('x-auth', token).send(user);
+    }).catch((e) => {
+        res.status(400).send(e);
+    });
+
+});
+
+app.listen(port, () => {
+    console.log('Started on port port', port);
 });
 
 module.exports = { app };
