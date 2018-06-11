@@ -1,8 +1,10 @@
+//npm run test sets the NODE_ENV var to 'test'
+
 const expect = require('expect');
 const request = require('supertest');
 const { ObjectID } = require('mongodb');
 
-const { app } = require('./../server');
+const { app } = require('./../server').default;
 const { Todo } = require('./../models/todo');
 
 const todos = [{
@@ -195,3 +197,5 @@ describe('PATCH/todos/:id', () => {
         //completed is false and completed at is null. toBeFalsy
     });
 });
+
+describe

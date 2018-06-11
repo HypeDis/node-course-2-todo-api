@@ -8,8 +8,8 @@ const _ = require('lodash');
 const { ObjectID } = require('mongodb');
 const { mongoose } = require('./db/mongoose.js');
 const { Todo } = require('./models/todo.js');
-const { User } = require('./models/users.js');
-const { authenticate } = require('./middleware/authenticate');
+const { User } = require('./models/user.js');
+const {authenticate} = require('./middleware/authenticate.js')
 
 let app = express();
 const port = process.env.PORT || 3000;
@@ -55,15 +55,6 @@ app.get('/todos/:id', (req, res) => {
     }, (e) => {
         res.status(400).send();
     });
-    //validate id
-    //404 -send back 
-
-    //findbyid
-    //success
-    //if todo send it back
-    //if no todo send back 404 empty body 
-    //error case
-    //send back 400 - and send empty body
 });
 
 app.delete('/todos/:id', (req, res) => {
@@ -89,8 +80,6 @@ app.patch('/todos/:id', (req, res) => {
     var id = req.params.id;
     var body = _.pick(req.body, ['text', 'completed'])
 
-    // console.log("body", body);
-
     if (!ObjectID.isValid(id)) {
         return res.status(404).send('404 id is invalid');
     }
@@ -113,16 +102,13 @@ app.patch('/todos/:id', (req, res) => {
     });
 });
 
-//post /users email and password
-//use pick to only accept email and password
-app.post('/users', (req, res) => {
+app.post('/users', (req, res) => { //generates an auth token when an email and password are passed in. _id and email are returned.
     let body = _.pick(req.body, ['email', 'password']);
-    // console.log('body is', body);
-    let user = new User(body);
 
+    let user = new User(body);
+    
     user.save().then(() => {
         return user.generateAuthToken();
-        // res.status(200).send({ user });
     }).then((token) => {
         res.header('x-auth', token).send(user);
     }).catch((e) => {
@@ -131,9 +117,8 @@ app.post('/users', (req, res) => {
 
 });
 
-
-app.get('/users/me', authenticate, (req, res) => {
-    res.send(req.user);
+app.get('/users/me', authenticate, (req, res) => { //returns a users _id and email when a x-auth token is passed in
+   res.send(req.user);
 });
 
 app.listen(port, () => {
