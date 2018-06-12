@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const validator = require('validator'); //validates various types of input. we are using this to validate an email is formatted correctly
 const jwt = require('jsonwebtoken'); //
 const _ = require('lodash');
+const bcrypt = require('bcryptjs');
 
 
 
@@ -80,7 +81,6 @@ UserSchema.statics.findByToken =  function (token) { //finds a user based on the
     } catch (e) {
         return Promise.reject(); //return the error if jwt.verify is not successful
     };
-
     return User.findOne({ 
         //this is a built-in mongoose static static helper functions 
         // http://mongoosejs.com/docs/queries.html
@@ -90,6 +90,22 @@ UserSchema.statics.findByToken =  function (token) { //finds a user based on the
         'tokens.access': 'auth'
     });
 };
+
+UserSchema.pre('save', function (next) { //this method is called before save.
+    let user = this; 
+    if ( user.isModified('password')) {//check if pw is modified. creating a new account is by default modified
+        bcrypt.genSalt(10, (err, salt) => {//generates a salt to use when hashing the password
+            bcrypt.hash(user.password, salt, (err, hash) => { //hashes the password with the generated salt.
+                //sidenote: when a user tries to log in the server will provide the salt 
+                // and rehash the inputted password and check against the hashed password on the database.
+                user.password = hash;
+                next();
+                });
+        });
+    } else {
+        next();
+    }
+});
 
 let User = mongoose.model('User', UserSchema); //1st param is collecion name. mongoose will create a plural version called 'users' in lowercase.
 // the 2nd param is the schema that will be used..
