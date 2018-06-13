@@ -57,7 +57,7 @@ UserSchema.methods.generateAuthToken = function () { //generates the webtoken fo
     let user = this; //'this' refers to the user object created in "app.post('/users')" by "let user = new User(body)" since it is called inside of it using "user.generateAuthToken"
     let access = 'auth'; //this variable just tells us the purpose of the token being generated. 
    
-    let token = jwt.sign({ _id: user._id.toHexString(), access }, 'abc123').toString();
+    let token = jwt.sign({ _id: user._id, access }, 'abc123').toString();
     //first param for jwt.sign is the string you want to pass in to generate a token
     //we use an object b/c we want to pass in the _id  and purpose of the token (access) so we can have different access values for different purposes (login, p/w reset etc...)
     //2nd param is a private key used during token generation
@@ -98,11 +98,11 @@ UserSchema.pre('save', function (next) { //this method is called before save.
             bcrypt.hash(user.password, salt, (err, hash) => { //hashes the password with the generated salt.
                 //sidenote: when a user tries to log in the server will provide the salt 
                 // and rehash the inputted password and check against the hashed password on the database.
-                user.password = hash;
-                next();
+                user.password = hash; //change user password to the hash
+                next(); 
                 });
         });
-    } else {
+    } else { //if password hasn't been modified, skip hash generation.
         next();
     }
 });

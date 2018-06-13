@@ -122,7 +122,7 @@ app.get('/users/me', authenticate, (req, res) => { //returns a users _id and ema
 });
 
 app.listen(port, () => {
-    console.log('Started on port port', port);
+    console.log('Started on port', port);
 });
 
 module.exports = { app };
