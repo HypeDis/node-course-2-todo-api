@@ -107,22 +107,21 @@ UserSchema.pre('save', function (next) { //this method is called before save.
     }
 });
 
-UserSchema.statics.findByCredentials = function (email, password) {
+UserSchema.statics.findByCredentials = function (email, password) { //pass in email and password and validate them
     let User = this;
 
     return User.findOne({email}).then((user) => {
         if(!user){
             return Promise.reject();
         }
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve, reject) => { //bcrypt is async so we need to create a new promise to handle it
             //use bcrypt.compare password and user.password
             bcrypt.compare(password, user.password, (err, res) => {
-                if(err || res === false){
+                if(err || res === false){ 
                     reject();
                 }
-                
                 else if(res === true){
-                    resolve(user);
+                    resolve(user); //return the user object if bcrypt.compare returns true
                 }
                
             });

@@ -126,8 +126,9 @@ app.get('/users/me', authenticate, (req, res) => { //returns a users _id and ema
 
 app.post('/users/login', (req, res) => {
     let body = _.pick(req.body, ['email', 'password']);
-    User.findByCredentials(body.email, body.password).then((user) => {
-        return user.generateAuthToken().then((token) => {
+
+    User.findByCredentials(body.email, body.password).then((user) => {//check if user and password are valid
+        return user.generateAuthToken().then((token) => { //generate a new auth token
             res.header('x-auth', token).send(user);
         })
     }).catch((e) => {
