@@ -3,13 +3,22 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
 let password = '123abc!';
+let hashedPassword = new String;
 
-// bcrypt.genSalt(10, (err, salt) => {
-//     console.log('salt',salt);
-//     bcrypt.hash(password, salt, (err, hash) => {
-//         console.log('hash_1',hash);
-//     });
-// });
+bcrypt.genSalt(10, (err, salt) => {
+    bcrypt.hash(password, salt, (err, hash) => {
+        console.log('hash', hash);
+        hashedPassword = hash;
+        bcrypt.compare(password, hashedPassword, (err, res) => {
+            console.log('result', res);
+        })
+    });
+});
+let hash2 = '$2a$10$UKSAJecnRnwUBvwHCpuKMefqpf9Ucbz5bZx.C/0Fd7r5vOIEGICRG';
+let hash3 = '$2a$10$R21R1Zd1Gc/hQrHtuj0BxuKc9Rqy7771vI0J.7uv6HCG8wfm7RKwi';
+bcrypt.compare(hash3, password, (err,res) => {
+    console.log('res2', res);
+});
 
 // let password_2 = 'abc123!';
 
@@ -22,7 +31,7 @@ let password = '123abc!';
 //     });
 // });
 
-// var hashedPassword = '$2a$10$6/5412U07tkK5umgJVAutOyvVcbNOrf0XHc8ZuZejfeghAKDCHUj';
+
 
 // bcrypt.compare(password, hashedPassword, (err, res) => {
 //     console.log(res);

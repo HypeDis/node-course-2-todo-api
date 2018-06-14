@@ -107,6 +107,29 @@ UserSchema.pre('save', function (next) { //this method is called before save.
     }
 });
 
+UserSchema.statics.findByCredentials = function (email, password) {
+    let User = this;
+
+    return User.findOne({email}).then((user) => {
+        if(!user){
+            return Promise.reject();
+        }
+        return new Promise((resolve, reject) => {
+            //use bcrypt.compare password and user.password
+            bcrypt.compare(password, user.password, (err, res) => {
+                if(err || res === false){
+                    reject();
+                }
+                
+                else if(res === true){
+                    resolve(user);
+                }
+               
+            });
+        });
+    });
+}
+
 let User = mongoose.model('User', UserSchema); //1st param is collecion name. mongoose will create a plural version called 'users' in lowercase.
 // the 2nd param is the schema that will be used..
 
