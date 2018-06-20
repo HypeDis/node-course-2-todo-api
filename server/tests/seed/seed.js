@@ -8,6 +8,7 @@ const { Todo } = require('./../../models/todo');
 const { User } = require('./../../models/user');
 
 const userOneId = new ObjectID(); // need to create the user id here so that jwt.sign can use the value. 
+const userTwoId = new ObjectID();
 
 const users = [{
     _id: userOneId,
@@ -18,7 +19,7 @@ const users = [{
         token: jwt.sign({ _id: userOneId, access: 'auth' }, 'abc123').toString()
     }]
 }, {
-    _id: new ObjectID(),
+    _id: userTwoId,
     email: 'abe@example.com',
     password: 'user2pass'
 

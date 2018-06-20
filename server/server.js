@@ -128,10 +128,23 @@ app.post('/users/login', (req, res) => {
     let body = _.pick(req.body, ['email', 'password']);
 
     User.findByCredentials(body.email, body.password).then((user) => {//check if user and password are valid
+
+        if (user === null) {
+
+            return res.status(400).send('user or p/w incorrect');
+        }
         return user.generateAuthToken().then((token) => { //generate a new auth token
             res.header('x-auth', token).send(user);
         })
     }).catch((e) => {
+        res.status(400).send();
+    });
+});
+
+app.delete('/users/me/token', authenticate, (req, res) => { //delete a token from a user document 
+    req.user.removeToken(req.token).then(() => {
+        res.status(200).send()
+    }, () => {
         res.status(400).send();
     });
 });

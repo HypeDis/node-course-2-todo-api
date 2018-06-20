@@ -26,7 +26,8 @@ let UserSchema = new mongoose.Schema({
         minlength: 6
     },
     tokens: [
-        {   _id: false, //stops mongoose from creating an _id inside of tokens[] b/c it thinks it is a subdocument.
+        {
+            _id: false, //stops mongoose from creating an _id inside of tokens[] b/c it thinks it is a subdocument.
             access: {
                 type: String,
                 required: true,
@@ -56,7 +57,7 @@ UserSchema.methods.toJSON = function () {
 UserSchema.methods.generateAuthToken = function () { //generates the webtoken for user authentication
     let user = this; //'this' refers to the user object created in "app.post('/users')" by "let user = new User(body)" since it is called inside of it using "user.generateAuthToken"
     let access = 'auth'; //this variable just tells us the purpose of the token being generated. 
-   
+
     let token = jwt.sign({ _id: user._id, access }, 'abc123').toString();
     //first param for jwt.sign is the string you want to pass in to generate a token
     //we use an object b/c we want to pass in the _id  and purpose of the token (access) so we can have different access values for different purposes (login, p/w reset etc...)
@@ -69,67 +70,77 @@ UserSchema.methods.generateAuthToken = function () { //generates the webtoken fo
     });
 };
 
-UserSchema.statics.findByToken =  function (token) { //finds a user based on the token value
-    
+UserSchema.methods.removeToken = function (token) {
+    let user = this;
+
+    return user.update({
+        $pull: {
+            tokens: { token } //why not tokens[0].token?
+        }
+    });
+};
+
+
+UserSchema.statics.findByToken = function (token) { //finds a user based on the token value
+
     let User = this;
     let decoded;
 
     try {
-        decoded = jwt.verify(token, 'abc123'); 
+        decoded = jwt.verify(token, 'abc123');
         //jwt.verify makes sure that if the token has been tampered with on the client side 
         // it will be rejected if the private key does not match on the server-side.
     } catch (e) {
         return Promise.reject(); //return the error if jwt.verify is not successful
     };
-    return User.findOne({ 
+    return User.findOne({
         //this is a built-in mongoose static static helper functions 
         // http://mongoosejs.com/docs/queries.html
-        
+
         '_id': decoded._id,
         'tokens.token': token,
         'tokens.access': 'auth'
     });
 };
 
+UserSchema.statics.findByCredentials = function (email, password) {
+    let User = this;
+
+    return User.findOne({ email }).then((user) => {
+        if (!user) {
+            return null;
+        }
+        return bcrypt.compare(password, user.password).then((res) => {
+            if (res) {
+                return user;
+            }
+            else {
+                return null;
+            }
+        }).catch((e) => {
+            return Promise.reject()
+        });
+
+    });
+};
+
 UserSchema.pre('save', function (next) { //this method is called before save.
-    let user = this; 
-    if ( user.isModified('password')) {//check if pw is modified. creating a new account is by default modified
+    let user = this;
+    if (user.isModified('password')) {//check if pw is modified. creating a new account is by default modified
         bcrypt.genSalt(10, (err, salt) => {//generates a salt to use when hashing the password
             bcrypt.hash(user.password, salt, (err, hash) => { //hashes the password with the generated salt.
                 //sidenote: when a user tries to log in the server will provide the salt 
                 // and rehash the inputted password and check against the hashed password on the database.
                 user.password = hash; //change user password to the hash
-                next(); 
-                });
+                next();
+            });
         });
     } else { //if password hasn't been modified, skip hash generation.
         next();
     }
 });
 
-UserSchema.statics.findByCredentials = function (email, password) { //pass in email and password and validate them
-    let User = this;
-
-    return User.findOne({email}).then((user) => {
-        if(!user){
-            return Promise.reject();
-        }
-        return new Promise((resolve, reject) => { //bcrypt is async so we need to create a new promise to handle it
-            //use bcrypt.compare password and user.password
-            bcrypt.compare(password, user.password, (err, res) => {
-                if(err || res === false){ 
-                    reject();
-                }
-                else if(res === true){
-                    resolve(user); //return the user object if bcrypt.compare returns true
-                }
-               
-            });
-        });
-    });
-}
-
 let User = mongoose.model('User', UserSchema); //1st param is collecion name. mongoose will create a plural version called 'users' in lowercase.
-// the 2nd param is the schema that will be used..
+// the 2nd param is the schema that will be used.
 
 module.exports = { User };
