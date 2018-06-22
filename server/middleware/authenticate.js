@@ -9,13 +9,13 @@ let authenticate = (req, res, next) => {//checks if token exists in database
         if (!user) {
             return Promise.reject();//ends authenticate if user does not exist
         }
-        req.user = user; 
+        req.user = user;
         req.token = token;
         next(); //next() is a mongoose middleware call that allows the next function in line to run. 
     }).catch((e) => {
         res.status(401).send();
     });
-    
+
 };
 
 module.exports = { authenticate };
