@@ -102,17 +102,19 @@ app.patch('/todos/:id', authenticate, (req, res) => {
         body.completedAt = null;
     }
 
-    Todo.findOneAndUpdate({_id:id, 
-                           _creator:req.user._id}, { $set: body }, { new: true })
+    Todo.findOneAndUpdate({
+        _id: id,
+        _creator: req.user._id
+    }, { $set: body }, { new: true })
         .then((todo) => { //new:true returns updated document instead of original document(default setting)
-        if (!todo) {
-            return res.status(404).send();
-        }
+            if (!todo) {
+                return res.status(404).send();
+            }
 
-        res.send({ todo });
-    }).catch((e) => {
-        res.status(400).send();
-    });
+            res.send({ todo });
+        }).catch((e) => {
+            res.status(400).send();
+        });
 });
 
 app.post('/users', (req, res) => { //generates an auth token when an email and password are passed in. _id and email are returned.

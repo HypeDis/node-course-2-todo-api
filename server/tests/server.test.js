@@ -9,6 +9,7 @@ const { Todo } = require('./../models/todo');
 const { User } = require('./../models/user');
 const { todos, populateTodos, users, populateUsers } = require('./seed/seed');
 
+
 //use .toBeTruthy instead of toExist
 //use .toMatchObject instead of toInclude
 
@@ -119,7 +120,7 @@ describe('GET/todos/:id', () => {
 describe('DELETE /todos/:id', () => {
     it('should remove a todo', (done) => {
         let hexId = todos[1]._id.toHexString();
-        console.log('hex id', hexId);
+
         request(app)
             .delete(`/todos/${hexId}`)
             .set('x-auth', users[1].tokens[0].token)
@@ -198,7 +199,7 @@ describe('PATCH/todos/:id', () => {
                 expect(typeof res.body.todo.completedAt).toBe('number');
             })
             .end(done);
-       
+
     });
 
     it('should not update the todo when other user is logged in', (done) => {
@@ -214,7 +215,7 @@ describe('PATCH/todos/:id', () => {
             .send(body)
             .expect(404)
             .end(done);
-       
+
     });
 
     it('should clear completed at when todo is not completed', (done) => {

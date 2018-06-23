@@ -1,2 +1,3 @@
 node_modules/
 mongo-start.bat
+server/config/config.json

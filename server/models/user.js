@@ -6,6 +6,7 @@ const bcrypt = require('bcryptjs');
 
 
 
+
 let UserSchema = new mongoose.Schema({
     email: {
         type: String,
@@ -58,7 +59,7 @@ UserSchema.methods.generateAuthToken = function () { //generates the webtoken fo
     let user = this; //'this' refers to the user object created in "app.post('/users')" by "let user = new User(body)" since it is called inside of it using "user.generateAuthToken"
     let access = 'auth'; //this variable just tells us the purpose of the token being generated. 
 
-    let token = jwt.sign({ _id: user._id, access }, 'abc123').toString();
+    let token = jwt.sign({ _id: user._id, access }, process.env.JWT_SECRET).toString();
     //first param for jwt.sign is the string you want to pass in to generate a token
     //we use an object b/c we want to pass in the _id  and purpose of the token (access) so we can have different access values for different purposes (login, p/w reset etc...)
     //2nd param is a private key used during token generation
@@ -87,7 +88,7 @@ UserSchema.statics.findByToken = function (token) { //finds a user based on the 
     let decoded;
 
     try {
-        decoded = jwt.verify(token, 'abc123');
+        decoded = jwt.verify(token, process.env.JWT_SECRET);
         //jwt.verify makes sure that if the token has been tampered with on the client side 
         // it will be rejected if the private key does not match on the server-side.
     } catch (e) {
